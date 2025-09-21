@@ -82,6 +82,48 @@ body {
   gap: 16px;
 }
 
+.header-links {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.icon-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: rgba(141, 197, 255, 0.08);
+  border: 1px solid rgba(141, 197, 255, 0.2);
+  color: var(--text-secondary);
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.icon-link:hover {
+  background: rgba(141, 197, 255, 0.15);
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px -8px rgba(141, 197, 255, 0.4);
+}
+
+.icon-link:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 8px -4px rgba(141, 197, 255, 0.3);
+}
+
+.icon-link svg {
+  transition: transform 0.3s ease;
+}
+
+.icon-link:hover svg {
+  transform: scale(1.1);
+}
+
+/* 兼容旧的类名 */
 .download-link {
   display: inline-flex;
   align-items: center;
@@ -122,11 +164,17 @@ body {
     gap: 12px;
   }
   
+  .header-links {
+    gap: 10px;
+  }
+  
+  .icon-link,
   .download-link {
     width: 32px;
     height: 32px;
   }
   
+  .icon-link svg,
   .download-link svg {
     width: 18px;
     height: 18px;
