@@ -8,11 +8,6 @@
 
 [![Deploy to Cloudflare Pages](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Kylsky/ios-liquid-cut)
 
-**最简单的部署方式：**
-1. 点击上方部署按钮
-2. 连接您的 GitHub 账户
-3. Fork 项目并自动部署
-4. 几分钟后即可访问您的音频剪辑工具
 
 ## 功能特性
 
