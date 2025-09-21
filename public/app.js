@@ -33,6 +33,12 @@ let createFFmpegFn = null;
 let fetchFileFn = null;
 let ffmpegScriptPromise = null;
 
+// Web Audio API 变量
+let audioContext = null;
+let sourceNode = null;
+let gainNode = null;
+let isWebAudioConnected = false;
+
 const defaultBundles = [
   {
     name: 'jsdelivr-01215-umd',
@@ -273,6 +279,38 @@ async function ensureFFmpeg() {
   hideStatus();
 }
 
+// Web Audio API 初始化
+function initWebAudio() {
+  if (isWebAudioConnected || !audioPlayer.src) return;
+  
+  try {
+    if (!audioContext) {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    
+    // 如果之前的源节点存在，先断开连接
+    if (sourceNode) {
+      sourceNode.disconnect();
+    }
+    if (gainNode) {
+      gainNode.disconnect();
+    }
+    
+    // 创建新的源节点和增益节点
+    sourceNode = audioContext.createMediaElementSource(audioPlayer);
+    gainNode = audioContext.createGain();
+    
+    // 连接音频链
+    sourceNode.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    isWebAudioConnected = true;
+  } catch (error) {
+    console.warn('Web Audio API初始化失败:', error);
+    isWebAudioConnected = false;
+  }
+}
+
 function showStatus(message) {
   statusBar.hidden = false;
   statusBar.textContent = message;
@@ -344,13 +382,44 @@ function clampSelection(changedSlider) {
 
 function attachPreviewWatcher(start, end) {
   clearPreviewWatcher();
+  
+  // 计算淡入淡出时长
+  const clipLength = end - start;
+  const fadeTime = Math.min(1.5, clipLength / 4);
+  const fadeOutStartTime = end - fadeTime;
+  
   previewWatcher = () => {
-    if (audioPlayer.currentTime >= end) {
+    const currentTime = audioPlayer.currentTime;
+    
+    // 如果有Web Audio API支持，控制音量淡入淡出
+    if (isWebAudioConnected && gainNode && audioContext) {
+      // 淡入效果
+      if (currentTime <= start + fadeTime) {
+        const fadeProgress = Math.max(0, (currentTime - start) / fadeTime);
+        gainNode.gain.value = Math.min(1, fadeProgress);
+      }
+      // 淡出效果
+      else if (currentTime >= fadeOutStartTime) {
+        const fadeProgress = Math.max(0, (end - currentTime) / fadeTime);
+        gainNode.gain.value = Math.max(0, fadeProgress);
+      }
+      // 正常音量
+      else {
+        gainNode.gain.value = 1;
+      }
+    }
+    
+    // 到达结束时间时停止播放
+    if (currentTime >= end) {
       audioPlayer.pause();
+      if (isWebAudioConnected && gainNode) {
+        gainNode.gain.value = 1; // 恢复正常音量
+      }
       audioPlayer.removeEventListener('timeupdate', previewWatcher);
       previewWatcher = null;
     }
   };
+  
   audioPlayer.addEventListener('timeupdate', previewWatcher);
 }
 
@@ -359,12 +428,27 @@ function clearPreviewWatcher() {
     audioPlayer.removeEventListener('timeupdate', previewWatcher);
     previewWatcher = null;
   }
+  // 恢复正常音量
+  if (isWebAudioConnected && gainNode) {
+    gainNode.gain.value = 1;
+  }
 }
 
 async function handleFile(file) {
   currentFile = file;
   currentBuffer = null;
   downloadSection.hidden = true;
+
+  // 重置Web Audio API连接状态
+  isWebAudioConnected = false;
+  if (sourceNode) {
+    sourceNode.disconnect();
+    sourceNode = null;
+  }
+  if (gainNode) {
+    gainNode.disconnect();
+    gainNode = null;
+  }
 
   if (clipObjectUrl) {
     URL.revokeObjectURL(clipObjectUrl);
@@ -455,6 +539,15 @@ previewBtn.addEventListener('click', () => {
   const start = Math.min(parseFloat(startSlider.value), parseFloat(endSlider.value));
   const end = Math.max(parseFloat(startSlider.value), parseFloat(endSlider.value));
   if (end - start <= 0) return;
+  
+  // 初始化Web Audio API
+  initWebAudio();
+  
+  // 设置初始音量为0（准备淡入）
+  if (isWebAudioConnected && gainNode) {
+    gainNode.gain.value = 0;
+  }
+  
   audioPlayer.currentTime = start;
   audioPlayer.play();
   attachPreviewWatcher(start, end);
@@ -534,11 +627,15 @@ exportBtn.addEventListener('click', async () => {
 
     showStatus('正在截取并转码为 MP3…');
 
-    // 执行 ffmpeg 命令
+    // 执行 ffmpeg 命令，添加淡入淡出效果
+    const fadeTime = Math.min(1.5, clipLength / 4); // 淡入淡出时长，最大1.5秒，不超过总时长的1/4
+    const fadeOutStart = Math.max(0, clipLength - fadeTime);
+    
     const args = [
       '-ss', start.toFixed(3),
       '-t', clipLength.toFixed(3),
       '-i', inputName,
+      '-af', `afade=in:st=0:d=${fadeTime.toFixed(3)},afade=out:st=${fadeOutStart.toFixed(3)}:d=${fadeTime.toFixed(3)}`,
       '-acodec', 'libmp3lame',
       '-b:a', '192k',
       '-ar', '44100',
