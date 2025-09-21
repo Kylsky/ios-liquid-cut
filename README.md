@@ -75,8 +75,8 @@ docker run -d \
 
 ```bash
 # 克隆项目
-git clone https://github.com/yourusername/audio-clipper.git
-cd audio-clipper
+git clone https://github.com/Kylsky/ios-liquid-cut.git
+cd ios-liquid-cut
 
 # 安装依赖
 npm install
