@@ -145,7 +145,7 @@ const headersContent = `/*
 fs.writeFileSync(path.join(distDir, '_headers'), headersContent);
 
 // Create _redirects file for SPA routing
-const redirectsContent = `/*    /index.html   200!`;
+const redirectsContent = `/index.html    /index.html   200\n/*    /index.html   200`;
 fs.writeFileSync(path.join(distDir, '_redirects'), redirectsContent);
 
 console.log('✅ Static build completed successfully!');
