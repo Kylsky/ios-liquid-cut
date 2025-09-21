@@ -1,11 +1,14 @@
-name = "liquid-cut"
-compatibility_date = "2024-12-01"
+name = "liquid-cut-worker"
+main = "src/worker.js"
+compatibility_date = "2024-09-01"
 
-[build]
-command = "npm run build"
+# Serve static files from ./dist via assets binding
+assets = { directory = "./dist", binding = "ASSETS", not_found_handling = "single-page-application" }
 
-[assets]
-directory = "./dist"
-
-[env.production.vars]
+[vars]
+# Default music download site (can be overridden at deploy-time)
 MUSIC_DOWNLOAD_URL = "https://www.mp3juices.cc/"
+
+# Optionally, you can set a custom route/domain after first deploy
+# routes = [ "example.com/*" ]
+

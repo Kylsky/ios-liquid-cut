@@ -12,7 +12,9 @@
     "build:cdn": "npm run build",
     "build:local": "npm run prepare:ffmpeg && BUILD_MODE=local node scripts/build-static.js",
     "prepare:ffmpeg": "node scripts/prepare-ffmpeg.js",
-    "postinstall": "npm run prepare:ffmpeg"
+    "postinstall": "npm run prepare:ffmpeg",
+    "dev:cf": "npx wrangler dev",
+    "deploy:cf": "npx wrangler deploy"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -22,5 +24,8 @@
     "@ffmpeg/ffmpeg": "^0.12.15",
     "compression": "^1.7.4",
     "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "wrangler": "^3.80.0"
   }
 }
