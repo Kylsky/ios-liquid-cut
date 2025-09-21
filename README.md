@@ -254,3 +254,12 @@ MIT
 ## 贡献
 
 欢迎提交 Issue 和 Pull Request！
+
+## 支持作者
+
+如果这个项目对你有帮助，欢迎请作者喝杯咖啡 ☕
+
+<div align="center">
+  <img src="./wechat-donation.jpg" alt="微信赞赏码" width="200">
+  <p><strong>感谢您的支持！</strong></p>
+</div>

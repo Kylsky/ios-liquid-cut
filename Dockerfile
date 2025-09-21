@@ -4,17 +4,19 @@ FROM node:18-alpine AS builder
 # 设置工作目录
 WORKDIR /app
 
-# 复制 package 文件
-COPY package*.json ./
+# 安装 pnpm
+RUN npm install -g pnpm
+
+# 复制 package 文件和 pnpm-lock.yaml
+COPY package.json pnpm-lock.yaml ./
+# 复制 scripts 文件夹以便 postinstall 脚本可以运行
+COPY scripts ./scripts
 
 # 安装依赖
-RUN npm ci --only=production
+RUN pnpm install --prod --force
 
-# 复制源代码
+# 复制其余源代码
 COPY . .
-
-# 运行准备脚本，生成 FFmpeg 资源
-RUN npm run prepare:ffmpeg || true
 
 # 生产环境镜像
 FROM node:18-alpine
@@ -33,7 +35,8 @@ WORKDIR /app
 COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nodejs:nodejs /app/public ./public
 COPY --from=builder --chown=nodejs:nodejs /app/server.js ./server.js
-COPY --from=builder --chown=nodejs:nodejs /app/package*.json ./
+COPY --from=builder --chown=nodejs:nodejs /app/package.json ./
+COPY --from=builder --chown=nodejs:nodejs /app/pnpm-lock.yaml ./
 COPY --from=builder --chown=nodejs:nodejs /app/scripts ./scripts
 
 # 切换到非 root 用户
