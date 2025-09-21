@@ -17,9 +17,11 @@ console.log(`🚀 Building in ${buildMode} mode...`);
 const distDir = path.join(__dirname, '..', 'dist');
 const publicDir = path.join(__dirname, '..', 'public');
 
-if (!fs.existsSync(distDir)) {
-  fs.mkdirSync(distDir, { recursive: true });
+// Ensure we always start from a clean dist directory to avoid leftover assets
+if (fs.existsSync(distDir)) {
+  fs.rmSync(distDir, { recursive: true, force: true });
 }
+fs.mkdirSync(distDir, { recursive: true });
 
 // Copy all files from public to dist
 function copyDir(src, dest, skipVendor = false) {
@@ -40,7 +42,7 @@ function copyDir(src, dest, skipVendor = false) {
     }
     
     if (fs.statSync(srcPath).isDirectory()) {
-      copyDir(srcPath, destPath);
+      copyDir(srcPath, destPath, skipVendor);
     } else {
       fs.copyFileSync(srcPath, destPath);
     }
@@ -49,6 +51,14 @@ function copyDir(src, dest, skipVendor = false) {
 
 // Copy public directory to dist (skip vendor in CDN mode)
 copyDir(publicDir, distDir, buildMode === 'cdn');
+
+// Remove vendor directory explicitly in CDN mode to keep bundle size within CF limits
+if (buildMode === 'cdn') {
+  const distVendorDir = path.join(distDir, 'vendor');
+  if (fs.existsSync(distVendorDir)) {
+    fs.rmSync(distVendorDir, { recursive: true, force: true });
+  }
+}
 
 // Read and modify index.html to inject configuration
 const indexPath = path.join(distDir, 'index.html');
