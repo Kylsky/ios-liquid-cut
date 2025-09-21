@@ -20,6 +20,8 @@
 
 > 提示：Cloudflare 构建环境会自动切换到 CDN 模式，无需额外配置。
 
+> 本地部署想要内置 FFmpeg？请执行 `npm run build:local` 或在 Pages 中将构建命令改为 `npm run build:local`。
+
 #### 📦 方式二：手动部署（本地 FFmpeg）
 
 **适用场景：** 需要离线使用或追求最佳性能
@@ -32,7 +34,7 @@
 5. 连接 GitHub 并选择 fork 的项目
 6. 构建设置：
    - 框架预设：`None`
-   - 构建命令：`npm run build`（使用本地 FFmpeg 资源）
+   - 构建命令：`npm run build:local`（使用本地 FFmpeg 资源）
    - 构建输出目录：`dist`
 7. 环境变量（可选）：
    - `MUSIC_DOWNLOAD_URL`：自定义音乐下载链接

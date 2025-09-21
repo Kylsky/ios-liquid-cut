@@ -3,16 +3,13 @@
 const fs = require('fs');
 const path = require('path');
 
-// Decide build mode based on env; default to CDN on Cloudflare to avoid 25 MiB limit
-const inferDefaultMode = () => {
-  if (process.env.BUILD_MODE) return process.env.BUILD_MODE;
-  const isCloudflare = process.env.CF_PAGES || process.env.CF_WORKER || process.env.CLOUDFLARE_CONTEXT;
-  return isCloudflare ? 'cdn' : 'local';
-};
-
 const ALLOWED_MODES = new Set(['cdn', 'local']);
-const resolvedMode = inferDefaultMode();
-const buildMode = ALLOWED_MODES.has(resolvedMode) ? resolvedMode : 'local';
+const resolvedMode = process.env.BUILD_MODE || 'cdn';
+const buildMode = ALLOWED_MODES.has(resolvedMode) ? resolvedMode : 'cdn';
+
+if (!ALLOWED_MODES.has(resolvedMode)) {
+  console.warn(`⚠️  Unknown BUILD_MODE="${resolvedMode}" received. Falling back to "cdn".`);
+}
 
 // Configuration for static build
 const config = {
@@ -148,7 +145,7 @@ const headersContent = `/*
 fs.writeFileSync(path.join(distDir, '_headers'), headersContent);
 
 // Create _redirects file for SPA routing
-const redirectsContent = `/*    /index.html   200`;
+const redirectsContent = `/*    /index.html   200!`;
 fs.writeFileSync(path.join(distDir, '_redirects'), redirectsContent);
 
 console.log('✅ Static build completed successfully!');
