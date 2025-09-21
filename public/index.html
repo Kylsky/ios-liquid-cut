@@ -104,6 +104,28 @@
               <strong id="lengthLabel">00:00</strong>
             </div>
           </div>
+          
+          <!-- 淡入淡出控制 -->
+          <div class="fade-controls">
+            <div class="fade-toggle">
+              <label class="toggle-label">
+                <input type="checkbox" id="fadeToggle" checked>
+                <span class="toggle-slider"></span>
+                <span class="toggle-text">启用淡入淡出</span>
+              </label>
+            </div>
+            <div class="fade-duration" id="fadeDurationSection">
+              <label for="fadeDuration">淡入淡出时长</label>
+              <select id="fadeDuration">
+                <option value="0.5">0.5秒</option>
+                <option value="1.0">1.0秒</option>
+                <option value="1.5" selected>1.5秒</option>
+                <option value="2.0">2.0秒</option>
+                <option value="3.0">3.0秒</option>
+              </select>
+            </div>
+          </div>
+          
           <div class="range-actions">
             <button id="previewBtn" class="ghost">预听选段</button>
             <button id="exportBtn" class="primary" disabled>导出 MP3</button>
