@@ -3,8 +3,16 @@
 const fs = require('fs');
 const path = require('path');
 
-// Get build mode from environment
-const buildMode = process.env.BUILD_MODE || 'local'; // 'local' or 'cdn'
+// Decide build mode based on env; default to CDN on Cloudflare to avoid 25 MiB limit
+const inferDefaultMode = () => {
+  if (process.env.BUILD_MODE) return process.env.BUILD_MODE;
+  const isCloudflare = process.env.CF_PAGES || process.env.CF_WORKER || process.env.CLOUDFLARE_CONTEXT;
+  return isCloudflare ? 'cdn' : 'local';
+};
+
+const ALLOWED_MODES = new Set(['cdn', 'local']);
+const resolvedMode = inferDefaultMode();
+const buildMode = ALLOWED_MODES.has(resolvedMode) ? resolvedMode : 'local';
 
 // Configuration for static build
 const config = {
