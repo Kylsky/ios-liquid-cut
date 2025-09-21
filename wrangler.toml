@@ -1,0 +1,9 @@
+name = "liquid-cut"
+compatibility_date = "2024-12-01"
+
+[build]
+command = "npm run build:cdn"
+publish = "dist"
+
+[env.production.vars]
+MUSIC_DOWNLOAD_URL = "https://www.mp3juices.cc/"

@@ -9,6 +9,7 @@
     "start": "node server.js",
     "dev": "node --watch server.js",
     "build": "npm run prepare:ffmpeg && node scripts/build-static.js",
+    "build:cdn": "npm run prepare:ffmpeg && BUILD_MODE=cdn node scripts/build-static.js",
     "prepare:ffmpeg": "node scripts/prepare-ffmpeg.js",
     "postinstall": "npm run prepare:ffmpeg"
   },

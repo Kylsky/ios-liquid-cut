@@ -6,7 +6,21 @@
 
 ### Cloudflare Pages 部署（推荐）
 
-由于项目包含大型 FFmpeg WASM 文件（30MB+），需要使用 Cloudflare Pages 而不是 Workers。
+现在支持两种部署方式：
+
+#### 🚀 方式一：一键部署（推荐）
+
+[![Deploy to Cloudflare Pages](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Kylsky/ios-liquid-cut)
+
+**特点：**
+- ✅ 一键部署，零配置
+- ✅ 使用 CDN 加载 FFmpeg（jsDelivr）
+- ✅ 构建速度快，文件体积小
+- ⚠️ 需要网络连接加载 FFmpeg
+
+#### 📦 方式二：手动部署（本地 FFmpeg）
+
+**适用场景：** 需要离线使用或追求最佳性能
 
 **部署步骤：**
 1. Fork 本项目到您的 GitHub
@@ -16,17 +30,17 @@
 5. 连接 GitHub 并选择 fork 的项目
 6. 构建设置：
    - 框架预设：`None`
-   - 构建命令：`npm run build`
+   - 构建命令：`npm run build`（注意：不是 build:cdn）
    - 构建输出目录：`dist`
-   - Root 目录：`/`（保持默认）
 7. 环境变量（可选）：
    - `MUSIC_DOWNLOAD_URL`：自定义音乐下载链接
 8. 点击 "Save and Deploy"
 
-**重要说明：**
-- ❌ 不能使用一键部署按钮（因为 WASM 文件过大）
-- ✅ 必须手动在 Cloudflare Pages 中配置
-- ✅ Cloudflare Pages 支持大文件，没有 25MB 限制
+**特点：**
+- ✅ 包含完整 FFmpeg，可离线使用
+- ✅ 性能最佳，加载速度快
+- ❌ 构建文件较大（~30MB）
+- ❌ 需要手动配置
 
 
 ## 功能特性
