@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  liquid-cut:
+    build: .
+    container_name: liquid-cut
+    ports:
+      - "3000:3000"
+    environment:
+      # 服务器配置
+      - PORT=3000
+      # 音乐下载链接配置
+      # 修改为您希望的默认音乐下载网站
+      - MUSIC_DOWNLOAD_URL=https://www.mp3juices.cc/
+      
+    restart: unless-stopped

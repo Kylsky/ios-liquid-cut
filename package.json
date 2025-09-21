@@ -1,0 +1,23 @@
+{
+  "name": "audio-clipper",
+  "version": "1.0.0",
+  "description": "Liquid Cut 音频剪辑 Node 服务",
+  "private": true,
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "prepare:ffmpeg": "node scripts/prepare-ffmpeg.js",
+    "postinstall": "npm run prepare:ffmpeg"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@ffmpeg/core": "^0.12.10",
+    "@ffmpeg/ffmpeg": "^0.12.15",
+    "compression": "^1.7.4",
+    "express": "^4.19.2"
+  }
+}
