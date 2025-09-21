@@ -20,6 +20,11 @@ const lengthLabel = document.getElementById('lengthLabel');
 const previewBtn = document.getElementById('previewBtn');
 const exportBtn = document.getElementById('exportBtn');
 
+// 淡入淡出控制元素
+const fadeToggle = document.getElementById('fadeToggle');
+const fadeDuration = document.getElementById('fadeDuration');
+const fadeDurationSection = document.getElementById('fadeDurationSection');
+
 let currentFile = null;
 let currentBuffer = null;
 let duration = 0;
@@ -311,6 +316,18 @@ function initWebAudio() {
   }
 }
 
+// 获取淡入淡出设置
+function getFadeSettings() {
+  const isEnabled = fadeToggle.checked;
+  const maxDuration = parseFloat(fadeDuration.value);
+  return { isEnabled, maxDuration };
+}
+
+// 计算实际淡入淡出时长
+function calculateFadeTime(clipLength, maxDuration) {
+  return Math.min(maxDuration, clipLength / 4);
+}
+
 function showStatus(message) {
   statusBar.hidden = false;
   statusBar.textContent = message;
@@ -383,9 +400,25 @@ function clampSelection(changedSlider) {
 function attachPreviewWatcher(start, end) {
   clearPreviewWatcher();
   
+  // 获取淡入淡出设置
+  const { isEnabled, maxDuration } = getFadeSettings();
+  
+  if (!isEnabled) {
+    // 如果淡入淡出被禁用，使用简单的预听逻辑
+    previewWatcher = () => {
+      if (audioPlayer.currentTime >= end) {
+        audioPlayer.pause();
+        audioPlayer.removeEventListener('timeupdate', previewWatcher);
+        previewWatcher = null;
+      }
+    };
+    audioPlayer.addEventListener('timeupdate', previewWatcher);
+    return;
+  }
+  
   // 计算淡入淡出时长
   const clipLength = end - start;
-  const fadeTime = Math.min(1.5, clipLength / 4);
+  const fadeTime = calculateFadeTime(clipLength, maxDuration);
   const fadeOutStartTime = end - fadeTime;
   
   previewWatcher = () => {
@@ -540,12 +573,16 @@ previewBtn.addEventListener('click', () => {
   const end = Math.max(parseFloat(startSlider.value), parseFloat(endSlider.value));
   if (end - start <= 0) return;
   
-  // 初始化Web Audio API
-  initWebAudio();
+  // 获取淡入淡出设置
+  const { isEnabled } = getFadeSettings();
   
-  // 设置初始音量为0（准备淡入）
-  if (isWebAudioConnected && gainNode) {
-    gainNode.gain.value = 0;
+  // 只有在启用淡入淡出时才初始化Web Audio
+  if (isEnabled) {
+    initWebAudio();
+    // 设置初始音量为0（准备淡入）
+    if (isWebAudioConnected && gainNode) {
+      gainNode.gain.value = 0;
+    }
   }
   
   audioPlayer.currentTime = start;
@@ -627,21 +664,39 @@ exportBtn.addEventListener('click', async () => {
 
     showStatus('正在截取并转码为 MP3…');
 
-    // 执行 ffmpeg 命令，添加淡入淡出效果
-    const fadeTime = Math.min(1.5, clipLength / 4); // 淡入淡出时长，最大1.5秒，不超过总时长的1/4
-    const fadeOutStart = Math.max(0, clipLength - fadeTime);
+    // 获取淡入淡出设置
+    const { isEnabled, maxDuration } = getFadeSettings();
     
-    const args = [
-      '-ss', start.toFixed(3),
-      '-t', clipLength.toFixed(3),
-      '-i', inputName,
-      '-af', `afade=in:st=0:d=${fadeTime.toFixed(3)},afade=out:st=${fadeOutStart.toFixed(3)}:d=${fadeTime.toFixed(3)}`,
-      '-acodec', 'libmp3lame',
-      '-b:a', '192k',
-      '-ar', '44100',
-      '-y',
-      outputName
-    ];
+    let args;
+    if (isEnabled) {
+      // 启用淡入淡出：添加音频滤镜
+      const fadeTime = calculateFadeTime(clipLength, maxDuration);
+      const fadeOutStart = Math.max(0, clipLength - fadeTime);
+      
+      args = [
+        '-ss', start.toFixed(3),
+        '-t', clipLength.toFixed(3),
+        '-i', inputName,
+        '-af', `afade=in:st=0:d=${fadeTime.toFixed(3)},afade=out:st=${fadeOutStart.toFixed(3)}:d=${fadeTime.toFixed(3)}`,
+        '-acodec', 'libmp3lame',
+        '-b:a', '192k',
+        '-ar', '44100',
+        '-y',
+        outputName
+      ];
+    } else {
+      // 禁用淡入淡出：不添加音频滤镜
+      args = [
+        '-ss', start.toFixed(3),
+        '-t', clipLength.toFixed(3),
+        '-i', inputName,
+        '-acodec', 'libmp3lame',
+        '-b:a', '192k',
+        '-ar', '44100',
+        '-y',
+        outputName
+      ];
+    }
 
     if (window.FFmpegWASM) {
       // 新版本 API
@@ -745,6 +800,14 @@ uploadArea.addEventListener('drop', (event) => {
   }
   handleFile(file);
 });
+
+// 淡入淡出控制事件监听器
+fadeToggle.addEventListener('change', () => {
+  fadeDurationSection.style.display = fadeToggle.checked ? 'flex' : 'none';
+});
+
+// 初始化淡入淡出控制显示状态
+fadeDurationSection.style.display = fadeToggle.checked ? 'flex' : 'none';
 
 window.addEventListener('beforeunload', () => {
   if (objectUrl) {
