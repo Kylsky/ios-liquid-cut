@@ -21,8 +21,8 @@
 
 ```bash
 # 克隆项目
-git clone https://github.com/yourusername/audio-clipper.git
-cd audio-clipper
+git clone https://github.com/Kylsky/ios-liquid-cut
+cd ios-liquid-cut
 
 # 使用 docker-compose 启动
 docker-compose up -d
